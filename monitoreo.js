@@ -1,5 +1,5 @@
 // --- CONFIGURACIÓN ---
-const API_BASE_URL = "http://3.228.249.162:5500/api";
+const API_BASE_URL = "https://3.228.249.162:5500/api";
 const DEVICE_UID = "CAR-01-ABCDEF";
 
 // --- REFERENCIAS A ELEMENTOS DEL DOM ---
