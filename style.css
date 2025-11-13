@@ -1,24 +1,81 @@
-/* Espaciado general */
-body {
-    background-color: #f8f9fa;
+/* --- Paleta de Colores --- */
+:root {
+    --color-beige: #F5F5DC;
+    --color-olive: #5A6E3A;
+    --color-olive-dark: #4A5D2F;
+    --color-brown: #8B4513;
+    --color-brown-dark: #7A3D0F;
+    --color-dark: #212529; /* Negro de Bootstrap */
 }
 
-/* Rejilla para los botones de control */
+/* --- Estilos Generales --- */
+body {
+    background-color: var(--color-beige);
+    color: var(--color-dark);
+}
+
+/* --- Barra de Navegación --- */
+.bg-olive-nav {
+    background-color: var(--color-olive);
+}
+
+/* --- Tarjetas del Menú (index.html) --- */
+.card-custom {
+    background-color: #ffffff;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.card-custom:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+.text-brown {
+    color: var(--color-brown);
+}
+
+/* --- Botones (control.html) --- */
+.btn-olive {
+    background-color: var(--color-olive);
+    border-color: var(--color-olive);
+    color: #ffffff;
+}
+.btn-olive:hover {
+    background-color: var(--color-olive-dark);
+    border-color: var(--color-olive-dark);
+    color: #ffffff;
+}
+
+.btn-brown {
+    background-color: var(--color-brown);
+    border-color: var(--color-brown);
+    color: #ffffff;
+}
+.btn-brown:hover {
+    background-color: var(--color-brown-dark);
+    border-color: var(--color-brown-dark);
+    color: #ffffff;
+}
+
+
+/* --- Rejilla de Control (control.html) --- */
 .controls-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     max-width: 600px;
+    margin: auto; /* Centrar la rejilla */
 }
 
-/* Caja para los logs de monitoreo */
+/* --- Cajas de Log (monitoreo.html) --- */
 .log-box {
     background-color: #ffffff;
     border: 1px solid #dee2e6;
-    border-radius: 5px;
     padding: 15px;
     height: 400px; /* Altura fija */
     overflow-y: auto; /* Scroll si el contenido es mucho */
-    white-space: pre-wrap; /* Mantiene el formato del JSON */
+    white-space: pre-wrap; 
     word-wrap: break-word;
+    font-family: monospace;
+    font-size: 0.9em;
+    color: var(--color-dark);
 }

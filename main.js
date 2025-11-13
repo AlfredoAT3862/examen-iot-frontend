@@ -4,8 +4,7 @@ const DEVICE_UID = "CAR-01-ABCDEF";
 
 // --- REFERENCIAS A ELEMENTOS DEL DOM ---
 let btnForward, btnBackward, btnLeft, btnRight, btnStop, btnFwdLeft, btnFwdRight, btnBackLeft, btnBackRight;
-let btnRefresh;
-let movementsLog, obstaclesLog, controlStatus;
+let controlStatus;
 
 // Espera a que todo el HTML esté cargado
 document.addEventListener("DOMContentLoaded", () => {
@@ -21,26 +20,17 @@ document.addEventListener("DOMContentLoaded", () => {
     btnBackRight = document.getElementById("btn-backward-right");
     controlStatus = document.getElementById("control-status");
 
-    // Asignar elementos de monitoreo (de index.html)
-    btnRefresh = document.getElementById("btn-refresh");
-    movementsLog = document.getElementById("movements-log");
-    obstaclesLog = document.getElementById("obstacles-log");
-
     // --- EVENT LISTENERS (ESCUCHADORES DE EVENTOS) ---
-
-    // Controles de Movimiento
-    btnForward.addEventListener('click', () => sendMove('forward'));
-    btnBackward.addEventListener('click', () => sendMove('backward'));
-    btnStop.addEventListener('click', () => sendMove('stop'));
-    btnFwdRight.addEventListener('click', () => sendMove('Vuelta adelante derecha'));
-    btnFwdLeft.addEventListener('click', () => sendMove('Vuelta adelante izquierda'));
-    btnBackRight.addEventListener('click', () => sendMove('Vuelta atrás derecha'));
-    btnBackLeft.addEventListener('click', () => sendMove('Vuelta atrás izquierda'));
-    btnRight.addEventListener('click', () => sendMove('Giro 90° derecha'));
-    btnLeft.addEventListener('click', () => sendMove('Giro 90° izquierda'));
-    
-    // Monitoreo
-    btnRefresh.addEventListener('click', fetchMonitoringData);
+    // (Asegurarse de que los elementos existan antes de añadir listeners)
+    btnForward?.addEventListener('click', () => sendMove('forward'));
+    btnBackward?.addEventListener('click', () => sendMove('backward'));
+    btnStop?.addEventListener('click', () => sendMove('stop'));
+    btnFwdRight?.addEventListener('click', () => sendMove('Vuelta adelante derecha'));
+    btnFwdLeft?.addEventListener('click', () => sendMove('Vuelta adelante izquierda'));
+    btnBackRight?.addEventListener('click', () => sendMove('Vuelta atrás derecha'));
+    btnBackLeft?.addEventListener('click', () => sendMove('Vuelta atrás izquierda'));
+    btnRight?.addEventListener('click', () => sendMove('Giro 90° derecha'));
+    btnLeft?.addEventListener('click', () => sendMove('Giro 90° izquierda'));
 });
 
 /**
@@ -68,7 +58,9 @@ async function sendMove(action) {
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Error desconocido');
 
-        showStatus(`Comando "${action}" (op_key: ${result.op_key}) recibido con éxito.`, 'success');
+        // Usamos el 'op_key' si existe, si no, el 'action'
+        const opKey = result.op_key || action;
+        showStatus(`Comando "${action}" (op_key: ${opKey}) recibido con éxito.`, 'success');
     } catch (error) {
         showStatus(`Error al enviar "${action}": ${error.message}`, 'danger');
     }
@@ -78,72 +70,9 @@ async function sendMove(action) {
  * Muestra un mensaje en el cuadro de estado del panel de control.
  */
 function showStatus(message, type = 'info') {
-    controlStatus.textContent = message;
-    controlStatus.className = `alert alert-${type} mt-3`;
-    controlStatus.style.display = 'block';
-}
-
-/**
- * Llama a las funciones para refrescar los dos paneles de monitoreo.
- */
-async function fetchMonitoringData() {
-    movementsLog.textContent = "Cargando movimientos...";
-    obstaclesLog.textContent = "Cargando obstáculos...";
-
-    await Promise.all([
-        fetchMovements(),
-        fetchObstacles()
-    ]);
-}
-
-/**
- * Obtiene y muestra los últimos 10 movimientos (formato amigable).
- */
-async function fetchMovements() {
-    const endpoint = `${API_BASE_URL}/movements/last10?device_uid=${DEVICE_UID}`;
-    
-    try {
-        const response = await fetch(endpoint);
-        const result = await response.json();
-        if (!response.ok || result.ok === false) throw new Error(result.error || 'Error al cargar movimientos');
-
-        if (result.movements.length === 0) {
-            movementsLog.textContent = "No hay movimientos registrados.";
-        } else {
-            // --- MODIFICACIÓN: Formato Amigable ---
-            const formattedText = result.movements.map(mov => {
-                const time = new Date(mov.ts).toLocaleString();
-                return `[${time}] ${mov.status_text}`;
-            }).join('\n'); // Unir cada evento con un salto de línea
-            movementsLog.textContent = formattedText;
-        }
-    } catch (error) {
-        movementsLog.textContent = `Error: ${error.message}`;
-    }
-}
-
-/**
- * Obtiene y muestra los últimos 10 obstáculos (formato amigable).
- */
-async function fetchObstacles() {
-    const endpoint = `${API_BASE_URL}/obstacles/last10?device_uid=${DEVICE_UID}`;
-
-    try {
-        const response = await fetch(endpoint);
-        const result = await response.json();
-        if (!response.ok || result.ok === false) throw new Error(result.error || 'Error al cargar obstáculos');
-
-        if (result.obstacles.length === 0) {
-            obstaclesLog.textContent = "No hay obstáculos registrados.";
-        } else {
-            // --- MODIFICACIÓN: Formato Amigable ---
-            const formattedText = result.obstacles.map(obs => {
-                const time = new Date(obs.ts).toLocaleString();
-                return `[${time}] ${obs.status_text} (Dist: ${obs.distance_cm} cm)`;
-            }).join('\n'); // Unir cada evento con un salto de línea
-            obstaclesLog.textContent = formattedText;
-        }
-    } catch (error) {
-        obstaclesLog.textContent = `Error: ${error.message}`;
+    if (controlStatus) {
+        controlStatus.textContent = message;
+        controlStatus.className = `alert alert-${type} mt-3 rounded-3`;
+        controlStatus.style.display = 'block';
     }
 }
