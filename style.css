@@ -58,13 +58,26 @@ body {
 
 
 /* --- Rejilla de Control (control.html) --- */
+/* ¡CAMBIOS AQUÍ! */
 .controls-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    /* 1. Por defecto (móvil), 1 sola columna (apilados) */
+    grid-template-columns: 1fr;
+    gap: 15px; /* Un poco más de espacio */
     max-width: 600px;
     margin: auto; /* Centrar la rejilla */
 }
+
+/* 2. Media query para pantallas grandes (lg = 992px en adelante) */
+@media (min-width: 992px) {
+    .controls-grid {
+        /* Vuelve a la cuadrícula de 3 columnas en escritorio */
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px; /* Espacio original en escritorio */
+    }
+}
+/* --- FIN DE LOS CAMBIOS --- */
+
 
 /* --- Cajas de Log (monitoreo.html) --- */
 .log-box {
