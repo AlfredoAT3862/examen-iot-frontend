@@ -10,31 +10,42 @@
 <body class="bg-main-beige">
     
     <nav class="navbar navbar-expand-lg navbar-dark bg-olive-nav shadow-sm">
-
     </nav>
 
     <main class="container my-4">
-        <!-- Panel de Control (Usando tu estructura) -->
         <div class="row justify-content-center">
             <div class="col-lg-8">
+
                 <section class="mb-5 p-4 bg-white rounded-4 shadow-sm" id="control-panel">
                     <h2 class="text-brown">Panel de Control</h2>
                     <p class="text-muted">Envía comandos de movimiento al dispositivo.</p>
+
                     <div class="controls-grid">
+
+                        <!-- Adelante -->
                         <button id="btn-forward-left" class="btn btn-brown rounded-3">Adelante-Izq</button>
                         <button id="btn-forward" class="btn btn-olive rounded-3">Adelante</button>
                         <button id="btn-forward-right" class="btn btn-brown rounded-3">Adelante-Der</button>
                         
+                        <!-- Giros 90° + Stop -->
                         <button id="btn-left" class="btn btn-olive rounded-3">Giro Izquierda</button>
                         <button id="btn-stop" class="btn btn-danger btn-lg rounded-3">DETENER</button>
                         <button id="btn-right" class="btn btn-olive rounded-3">Giro Derecha</button>
-                        
+
+                        <!-- NUEVOS BOTONES 360° -->
+                        <button id="btn-rotate-left-360" class="btn btn-warning rounded-3">Giro 360° Izq</button>
+                        <button id="btn-rotate-right-360" class="btn btn-warning rounded-3">Giro 360° Der</button>
+
+                        <!-- Atrás -->
                         <button id="btn-backward-left" class="btn btn-brown rounded-3">Atrás-Izq</button>
                         <button id="btn-backward" class="btn btn-olive rounded-3">Atrás</button>
                         <button id="btn-backward-right" class="btn btn-brown rounded-3">Atrás-Der</button>
+
                     </div>
+
                     <div class="alert alert-info mt-3 rounded-3" id="control-status" style="display: none;"></div>
                 </section>
+
             </div>
         </div>
     </main>
