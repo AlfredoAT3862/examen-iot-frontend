@@ -5,7 +5,7 @@
     --color-olive-dark: #4A5D2F;
     --color-brown: #8B4513;
     --color-brown-dark: #7A3D0F;
-    --color-dark: #212529; /* Negro de Bootstrap */
+    --color-dark: #212529;
 }
 
 /* --- Estilos Generales --- */
@@ -33,7 +33,7 @@ body {
     color: var(--color-brown);
 }
 
-/* --- Botones (control.html) --- */
+/* --- Botones (colores) --- */
 .btn-olive {
     background-color: var(--color-olive);
     border-color: var(--color-olive);
@@ -57,35 +57,99 @@ body {
 }
 
 
-/* --- Rejilla de Control (control.html) --- */
-/* ¡CAMBIOS AQUÍ! */
+/* --- ¡NUEVA REJILLA DE CONTROL! --- */
 .controls-grid {
     display: grid;
-    /* 1. Por defecto (móvil), 1 sola columna (apilados) */
-    grid-template-columns: 1fr;
-    gap: 15px; /* Un poco más de espacio */
-    max-width: 600px;
-    margin: auto; /* Centrar la rejilla */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 300px; /* Reducido para que se vea más compacto */
+    margin: 20px auto;
+    grid-auto-rows: 1fr;
+    /* Centra los items en sus celdas */
+    align-items: center; 
+    justify-items: center;
 }
 
-/* 2. Media query para pantallas grandes (lg = 992px en adelante) */
-@media (min-width: 992px) {
-    .controls-grid {
-        /* Vuelve a la cuadrícula de 3 columnas en escritorio */
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px; /* Espacio original en escritorio */
-    }
+/* Estilo para los botones de las ESQUINAS */
+.controls-grid .btn {
+    font-size: 0.8rem; /* Más pequeño para que quepa */
+    padding: 10px 5px;
+    height: 80px; /* Altura fija */
+    width: 100%; /* Ocupa su celda */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    white-space: normal; 
+    word-wrap: break-word;
 }
-/* --- FIN DE LOS CAMBIOS --- */
 
+/* --- El botón de STOP redondo --- */
+#btn-stop {
+    border-radius: 50% !important; /* ¡Lo hace redondo! */
+    width: 80px;  /* Ancho fijo (más pequeño) */
+    height: 80px; /* Altura fija (más pequeño) */
+    place-self: center; /* Centra el botón en su celda */
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 0; 
+}
+
+/* --- ¡AQUÍ ESTÁ LA MAGIA DE LOS TRIÁNGULOS! --- */
+.btn-triangle {
+    width: 0;
+    height: 0;
+    cursor: pointer; /* Hace que parezca un botón */
+    transition: filter 0.2s ease-in-out;
+}
+.btn-triangle:hover {
+    filter: brightness(0.8); /* Oscurece el botón al pasar el mouse */
+}
+.btn-triangle:active {
+    filter: brightness(0.6); /* Lo oscurece más al hacer clic */
+}
+
+/* Tamaño del triángulo */
+.triangle-up {
+    border-left: 35px solid transparent;
+    border-right: 35px solid transparent;
+    border-bottom: 50px solid var(--color-olive); /* Esta es la flecha */
+}
+.triangle-down {
+    border-left: 35px solid transparent;
+    border-right: 35px solid transparent;
+    border-top: 50px solid var(--color-olive); /* Esta es la flecha */
+}
+.triangle-left {
+    border-top: 35px solid transparent;
+    border-bottom: 35px solid transparent;
+    border-right: 50px solid var(--color-olive); /* Esta es la flecha */
+}
+.triangle-right {
+    border-top: 35px solid transparent;
+    border-bottom: 35px solid transparent;
+    border-left: 50px solid var(--color-olive); /* Esta es la flecha */
+}
+/* --- FIN DE LOS TRIÁNGULOS --- */
+
+
+/* Contenedor para los botones 360 */
+.controls-360 {
+    max-width: 400px;
+    margin: auto;
+}
+.controls-360 .btn {
+    padding: 10px 20px;
+    font-weight: 500;
+}
 
 /* --- Cajas de Log (monitoreo.html) --- */
 .log-box {
     background-color: #ffffff;
     border: 1px solid #dee2e6;
     padding: 15px;
-    height: 400px; /* Altura fija */
-    overflow-y: auto; /* Scroll si el contenido es mucho */
+    height: 400px;
+    overflow-y: auto;
     white-space: pre-wrap; 
     word-wrap: break-word;
     font-family: monospace;
