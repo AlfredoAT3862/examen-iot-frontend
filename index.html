@@ -10,37 +10,50 @@
 <body class="bg-main-beige">
     
     <nav class="navbar navbar-expand-lg navbar-dark bg-olive-nav shadow-sm">
-
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Dashboard de Control IoT</a>
+        </div>
     </nav>
 
     <main class="container my-5">
-        <div class="row text-center g-4">
+        <div class="row text-center g-4 justify-content-center">
             
-            <!-- Tarjeta 1: Panel de Control -->
-            <div class="col-lg-6">
+            <div class="col-lg-4 col-md-6">
                 <a href="control.html" class="text-decoration-none">
                     <div class="card h-100 shadow rounded-4 card-custom">
                         <div class="card-body p-5">
+                            <img src="control-de-navegacion.png" alt="Control" class="img-fluid mb-3" style="max-height: 120px;">
                             <h2 class="card-title text-brown mb-3">Controles</h2>
-                            <img src="control-de-navegacion.png" alt="Monitoreo Icon" class="img-fluid mb-3" style="width: 60px;">
                             <p class="card-text text-dark">
-                                Accede aquí para controlar manualmente el dispositivo, O escribir un proceso de movimentos (DEMO)
+                                Controla el dispositivo manualmente.
                             </p>
                         </div>
                     </div>
                 </a>
             </div>
 
-            <!-- Tarjeta 2: Panel de Monitoreo -->
-            <div class="col-lg-6">
+            <div class="col-lg-4 col-md-6">
                 <a href="monitoreo.html" class="text-decoration-none">
                     <div class="card h-100 shadow rounded-4 card-custom">
                         <div class="card-body p-5">
+                            <img src="monitor.png" alt="Monitoreo" class="img-fluid mb-3" style="max-height: 120px;">
                             <h2 class="card-title text-brown mb-3">Panel de Monitoreo</h2>
-                            <img src="monitor.png" alt="Monitoreo Icon" class="img-fluid mb-3" style="width: 60px;">
-
                             <p class="card-text text-dark">
-                                Visualiza los últimos 10 movimientos y obstáculos detectados. Los datos se actualizan automáticamente.
+                                Visualiza los logs y datos del sensor.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <a href="demo.html" class="text-decoration-none">
+                    <div class="card h-100 shadow rounded-4 card-custom">
+                        <div class="card-body p-5">
+                            <img src="tabla.png" alt="Demo" class="img-fluid mb-3" style="max-height: 120px;">
+                            <h2 class="card-title text-brown mb-3">Modo Demo</h2>
+                            <p class="card-text text-dark">
+                                Crea y ejecuta secuencias de movimientos.
                             </p>
                         </div>
                     </div>
