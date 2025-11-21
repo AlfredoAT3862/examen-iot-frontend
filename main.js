@@ -6,6 +6,7 @@ const DEVICE_UID = "CAR-01-ABCDEF";
 let btnForward, btnBackward, btnLeft, btnRight, btnStop;
 let btnFwdLeft, btnFwdRight, btnBackLeft, btnBackRight;
 let btnRotateLeft360, btnRotateRight360;
+let btnSpeedLow, btnSpeedMid, btnSpeedHigh;
 let controlStatus;
 
 // Espera a que todo el HTML esté cargado
@@ -22,9 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
     btnBackLeft = document.getElementById("btn-backward-left");
     btnBackRight = document.getElementById("btn-backward-right");
 
-    // Botones nuevos 360°
     btnRotateLeft360 = document.getElementById("btn-rotate-left-360");
     btnRotateRight360 = document.getElementById("btn-rotate-right-360");
+
+    btnSpeedLow = document.getElementById("btn-speed-low");
+    btnSpeedMid = document.getElementById("btn-speed-mid");
+    btnSpeedHigh = document.getElementById("btn-speed-high");
 
     controlStatus = document.getElementById("control-status");
 
@@ -42,10 +46,46 @@ document.addEventListener("DOMContentLoaded", () => {
     btnRight?.addEventListener('click', () => sendMove('Giro 90° derecha'));
     btnLeft?.addEventListener('click', () => sendMove('Giro 90° izquierda'));
 
-    // --- LISTENERS 360° CORREGIDOS ---
     btnRotateLeft360?.addEventListener('click', () => sendMove('Giro 360° izquierda'));
     btnRotateRight360?.addEventListener('click', () => sendMove('Giro 360° derecha'));
+
+    // --- NUEVO: CONTROL DE VELOCIDAD ---
+    btnSpeedLow?.addEventListener('click', () => setSpeed(150, btnSpeedLow));
+    btnSpeedMid?.addEventListener('click', () => setSpeed(200, btnSpeedMid));
+    btnSpeedHigh?.addEventListener('click', () => setSpeed(250, btnSpeedHigh));
 });
+
+// === NUEVO: FUNCIÓN PARA ENVIAR VELOCIDAD ===
+async function setSpeed(speed, button) {
+    const endpoint = `${API_BASE_URL}/speed`;
+
+    // Actualiza visualmente el botón activo
+    document.querySelectorAll("#btn-speed-low, #btn-speed-mid, #btn-speed-high")
+        .forEach(btn => btn.classList.remove("active"));
+
+    button.classList.add("active");
+
+    showStatus(`Enviando velocidad: ${speed}...`, "info");
+
+    try {
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                device_uid: DEVICE_UID,
+                speed: speed
+            })
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Error desconocido");
+
+        showStatus(`Velocidad actualizada a ${speed}.`, "success");
+
+    } catch (err) {
+        showStatus(`Error al cambiar velocidad: ${err.message}`, "danger");
+    }
+}
 
 /**
  * Envía un comando de movimiento a la API usando fetch async/await.
@@ -79,9 +119,6 @@ async function sendMove(action) {
     }
 }
 
-/**
- * Muestra un mensaje de estado del panel.
- */
 function showStatus(message, type = 'info') {
     if (controlStatus) {
         controlStatus.textContent = message;
