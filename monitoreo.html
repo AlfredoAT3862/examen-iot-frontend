@@ -9,15 +9,29 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-olive-nav shadow-sm">
-
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Dashboard de Control IoT</a>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="control.html">Ir a Control</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="demo.html">Ir a Demo</a>
+                </li>
+            </ul>
+        </div>
     </nav>
 
     <main class="container my-4">
         <section>
             <h2>Panel de Monitoreo</h2>
-            <p>Ver los últimos eventos y el historial del dispositivo.</p>
-            <button id="btn-refresh" class="btn btn-success mb-3">Actualizar Datos</button>
+            <p>Ver los eventos y el historial del dispositivo.</p>
 
+            <!-- 🔥 SE ELIMINÓ EL BOTÓN DE ACTUALIZAR -->
+            <!-- <button id="btn-refresh" class="btn btn-success mb-3">Actualizar Datos</button> -->
+
+            <!-- 🔥 SE ELIMINÓ EL BLOQUE DE ÚLTIMO MOVIMIENTO / ÚLTIMO OBSTÁCULO -->
+            <!--
             <div class="row mb-4">
                 <div class="col-md-6">
                     <div class="card text-center">
@@ -42,17 +56,18 @@
                     </div>
                 </div>
             </div>
+            -->
 
             <hr>
 
             <div class="row">
                 <div class="col-md-6">
                     <h3>Historial de Movimientos</h3>
-                    <pre id="movements-log" class="log-box">Presiona "Actualizar" para ver el historial...</pre>
+                    <pre id="movements-log" class="log-box">Cargando historial...</pre>
                 </div>
                 <div class="col-md-6">
                     <h3>Historial de Obstáculos</h3>
-                    <pre id="obstacles-log" class="log-box">Presiona "Actualizar" para ver el historial...</pre>
+                    <pre id="obstacles-log" class="log-box">Cargando historial...</pre>
                 </div>
             </div>
         </section>

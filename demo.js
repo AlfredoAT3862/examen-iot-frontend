@@ -2,7 +2,7 @@
 const API_BASE_URL = "http://3.228.249.162:5500/api";
 const DEVICE_UID = "CAR-01-ABCDEF";
 
-// Mapeo de op_key a texto (basado en tu api.py)
+// Mapeo de op_key a texto
 const OP_MAP = {
     1: "Adelante",
     2: "Atrás",
@@ -18,11 +18,12 @@ const OP_MAP = {
 };
 
 // --- DOM Refs ---
-let selectMovement, btnAddStep, btnClearList, btnRunDemo, sequenceNameInput, sequenceListDisplay, statusDemo;
-let currentSequence = []; // Array para guardar los op_keys
+let selectMovement, btnAddStep, btnClearList, btnRunDemo,
+    sequenceNameInput, sequenceListDisplay, statusDemo;
+
+let currentSequence = []; // Array para guardar op_keys
 
 document.addEventListener("DOMContentLoaded", () => {
-    // --- Asignar Elementos ---
     selectMovement = document.getElementById("select-movement");
     btnAddStep = document.getElementById("btn-add-step");
     btnClearList = document.getElementById("btn-clear-list");
@@ -31,51 +32,45 @@ document.addEventListener("DOMContentLoaded", () => {
     sequenceListDisplay = document.getElementById("sequence-list-display");
     statusDemo = document.getElementById("status-demo");
 
-    // --- Cargar Movimientos en el Dropdown ---
     populateSelect();
 
-    // --- Event Listeners ---
     btnAddStep.addEventListener('click', addMovementStep);
     btnClearList.addEventListener('click', clearSequenceList);
     btnRunDemo.addEventListener('click', handleRunDemo);
 });
 
 /**
- * Llena el <select> con los 11 movimientos
+ * Llena el <select> con los movimientos
  */
 function populateSelect() {
     for (const key in OP_MAP) {
         const option = document.createElement("option");
-        option.value = key; // El valor será el op_key (ej: "1")
-        option.textContent = OP_MAP[key]; // El texto será (ej: "Adelante")
+        option.value = key;
+        option.textContent = OP_MAP[key];
         selectMovement.appendChild(option);
     }
 }
 
 /**
- * Añade el movimiento seleccionado a la lista visual y al array
+ * Añade el movimiento seleccionado
  */
 function addMovementStep() {
     const opKey = parseInt(selectMovement.value, 10);
     const opText = OP_MAP[opKey];
 
-    // Añadir al array lógico
     currentSequence.push(opKey);
 
-    // Añadir a la lista visual
     const li = document.createElement("li");
     li.className = "list-group-item d-flex justify-content-between align-items-center";
     li.textContent = opText;
-    
-    // Guardamos el op_key en el elemento por si lo necesitamos
     li.setAttribute('data-key', opKey);
-    
+
     sequenceListDisplay.appendChild(li);
     showStatus(`Paso ${currentSequence.length} añadido: ${opText}`, 'info');
 }
 
 /**
- * Limpia la secuencia actual (array y lista visual)
+ * Limpia la secuencia actual
  */
 function clearSequenceList() {
     currentSequence = [];
@@ -84,48 +79,55 @@ function clearSequenceList() {
 }
 
 /**
- * 1. Guarda la secuencia en el backend (UPSERT)
- * 2. Inicia la secuencia (START)
+ * Guarda la secuencia y luego la ejecuta
  */
 async function handleRunDemo() {
     const sequenceName = sequenceNameInput.value.trim();
 
     if (currentSequence.length === 0) {
-        showStatus("Error: No puedes ejecutar una secuencia vacía. Añade movimientos.", 'danger');
+        showStatus("Error: No puedes ejecutar una secuencia vacía.", 'danger');
         return;
     }
     if (sequenceName === "") {
-        showStatus("Error: Por favor, dale un nombre a tu secuencia.", 'danger');
+        showStatus("Error: Debes darle un nombre a la secuencia.", 'danger');
         return;
     }
 
-    // --- PASO 1: Guardar (Upsert) la secuencia ---
+    // --- PASO 1: Guardar la secuencia (UPSERT)
     showStatus(`Guardando secuencia "${sequenceName}"...`, 'info');
+
     try {
         const upsertBody = {
             device_uid: DEVICE_UID,
             name: sequenceName,
-            sequence: currentSequence, // El array de op_keys
+            sequence: currentSequence,
             total_steps: currentSequence.length
         };
-        
-        const responseUpsert = await fetch(`${API_BASE_URL}/demo/sequence/upsert`, {
+
+        const responseUpsert = await fetch(`${API_BASE_URL}/demo/upsert`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(upsertBody)
         });
 
         const resultUpsert = await responseUpsert.json();
-        if (!responseUpsert.ok) throw new Error(resultUpsert.error || 'Error al guardar');
-        
+        if (!responseUpsert.ok) throw new Error(resultUpsert.error || "Error al guardar");
+
+        // Mostrar versión amigable de la secuencia
+        const readableSeq = currentSequence
+            .map((k, i) => `${i + 1}. ${OP_MAP[k]}`)
+            .join("\n");
+
+        console.log("Secuencia guardada:\n" + readableSeq);
+
         showStatus(`Secuencia "${sequenceName}" guardada. Iniciando...`, 'success');
 
     } catch (error) {
         showStatus(`Error al guardar la secuencia: ${error.message}`, 'danger');
-        return; // No continuar si no se pudo guardar
+        return;
     }
 
-    // --- PASO 2: Iniciar (Start) la secuencia ---
+    // --- PASO 2: Iniciar la secuencia
     try {
         const startBody = {
             device_uid: DEVICE_UID,
@@ -133,13 +135,13 @@ async function handleRunDemo() {
         };
 
         const responseStart = await fetch(`${API_BASE_URL}/demo/start`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(startBody)
         });
 
         const resultStart = await responseStart.json();
-        if (!responseStart.ok) throw new Error(resultStart.error || 'Error al iniciar');
+        if (!responseStart.ok) throw new Error(resultStart.error || "Error al iniciar");
 
         showStatus(`¡Secuencia Demo "${sequenceName}" ejecutándose en el dispositivo!`, 'success');
 
@@ -149,7 +151,7 @@ async function handleRunDemo() {
 }
 
 /**
- * Muestra un mensaje en el cuadro de estado
+ * Muestra mensajes visuales
  */
 function showStatus(message, type = 'info') {
     statusDemo.textContent = message;
