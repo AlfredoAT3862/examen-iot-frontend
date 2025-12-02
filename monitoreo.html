@@ -2,17 +2,132 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel de Monitoreo IoT</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="carro.png" type="image/x-icon">
+
+    <style>
+        /* 1. ESTRUCTURA GLOBAL */
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            flex-shrink: 0;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding-bottom: 1rem;
+        }
+
+        .dashboard-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-header {
+            flex-shrink: 0;
+            margin-bottom: 0.5rem; /* Margen reducido */
+            text-align: center;
+        }
+
+        /* 2. FILA DE DATOS - CAMBIO CLAVE */
+        .data-row {
+            /* ANTES: flex: 1; (Ocupaba todo el espacio restante) */
+            /* AHORA: height: 50%; (Ocupa solo la mitad, dejando espacio abajo) */
+            height: 50%; 
+            min-height: 200px; /* Evita que se aplaste demasiado en móviles */
+            margin-bottom: 1rem;
+        }
+
+        /* 3. ESPACIO FUTURO (Opcional: visualiza dónde irá tu próxima info) */
+        .future-content-area {
+            flex: 1; /* Esto ocupará el resto del espacio vacío abajo */
+            /* border: 2px dashed #ccc;  <-- Descomenta esto si quieres ver el borde del área vacía */
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+        }
+
+        /* TARJETAS */
+        .log-card {
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+            overflow: hidden;
+        }
+
+        .log-header {
+            background-color: #f1f3f5;
+            padding: 8px 12px; /* Padding reducido */
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            font-size: 0.9rem; /* Header un poco más pequeño */
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 4. CONTENIDO COMPACTO */
+        .log-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px; /* Menos relleno */
+            background-color: #fafafa;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            
+            /* LETRA MÁS PEQUEÑA SOLICITADA */
+            font-size: 0.75rem; 
+            
+            color: #333;
+            white-space: pre-wrap;
+            line-height: 1.4; /* Líneas un poco más juntas */
+        }
+
+        /* Scrollbar estilizado */
+        .log-content::-webkit-scrollbar { width: 5px; }
+        .log-content::-webkit-scrollbar-track { background: #f1f1f1; }
+        .log-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        .log-content::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+        .badge-mov { background-color: #e3f2fd; color: #0d47a1; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+        .badge-obs { background-color: #fbe9e7; color: #bf360c; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+
+    </style>
 </head>
-<body>
+<body class="bg-main-beige">
+    
     <nav class="navbar navbar-expand-lg navbar-dark bg-olive-nav shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="index.html">Dashboard de Control IoT</a>
-            <ul class="navbar-nav">
+            <a class="navbar-brand" href="index.html">Carrito a control remoto</a>
+            <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="control.html">Ir a Control</a>
                 </li>
@@ -23,55 +138,48 @@
         </div>
     </nav>
 
-    <main class="container my-4">
-        <section>
-            <h2>Panel de Monitoreo</h2>
-            <p>Ver los eventos y el historial del dispositivo.</p>
+    <main class="container my-3">
+        <div class="dashboard-container">
+            
+            <div class="page-header">
+                <h2 class="text-brown mb-0 fw-bold fs-4">Panel de Monitoreo</h2>
+                <p class="text-muted small mb-0">Eventos en tiempo real</p>
+            </div>
 
-            <!-- 🔥 SE ELIMINÓ EL BOTÓN DE ACTUALIZAR -->
-            <!-- <button id="btn-refresh" class="btn btn-success mb-3">Actualizar Datos</button> -->
+            <hr class="my-2 opacity-25">
 
-            <!-- 🔥 SE ELIMINÓ EL BLOQUE DE ÚLTIMO MOVIMIENTO / ÚLTIMO OBSTÁCULO -->
-            <!--
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="card text-center">
-                        <div class="card-header">
-                            Último Movimiento Registrado
+            <div class="row g-3 data-row">
+                
+                <div class="col-md-6 h-100">
+                    <div class="log-card">
+                        <div class="log-header">
+                            <span>Movimientos</span>
+                            <span class="badge-mov">Motor</span>
                         </div>
-                        <div class="card-body">
-                            <h3 class="card-title" id="last-move-text">Presiona "Actualizar"...</h3>
-                            <p class="card-text text-muted" id="last-move-time"></p>
+                        <div id="movements-log" class="log-content">
+                            Cargando historial...
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="card text-center">
-                        <div class="card-header">
-                            Último Obstáculo Detectado
+
+                <div class="col-md-6 h-100">
+                    <div class="log-card">
+                        <div class="log-header">
+                            <span>Obstáculos</span>
+                            <span class="badge-obs">Sensores</span>
                         </div>
-                        <div class="card-body">
-                            <h3 class="card-title" id="last-obs-text">Presiona "Actualizar"...</h3>
-                            <p class="card-text text-muted" id="last-obs-time"></p>
+                        <div id="obstacles-log" class="log-content">
+                            Cargando historial...
                         </div>
                     </div>
                 </div>
+            
             </div>
-            -->
 
-            <hr>
+            <div class="future-content-area">
+                </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <h3>Historial de Movimientos</h3>
-                    <pre id="movements-log" class="log-box">Cargando historial...</pre>
-                </div>
-                <div class="col-md-6">
-                    <h3>Historial de Obstáculos</h3>
-                    <pre id="obstacles-log" class="log-box">Cargando historial...</pre>
-                </div>
-            </div>
-        </section>
+        </div>
     </main>
 
     <script src="monitoreo.js"></script>
