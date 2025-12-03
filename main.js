@@ -1,6 +1,14 @@
+/**
+ * main.js - VERSIÓN WEBSOCKET (REAL-TIME)
+ * Se conecta al canal /ws/web del servidor Python.
+ */
+
 // --- CONFIGURACIÓN ---
-const API_BASE_URL = "http://3.228.249.162:5500/api";
+// NOTA: Cambiamos http:// por ws:// y apuntamos a la ruta nueva
+const WS_URL = "ws://3.228.249.162:5500/ws/web";
 const DEVICE_UID = "CAR-01-ABCDEF";
+
+let socket; // Variable para la conexión WebSocket
 
 // --- REFERENCIAS A ELEMENTOS DEL DOM ---
 let btnForward, btnBackward, btnLeft, btnRight, btnStop;
@@ -12,6 +20,10 @@ let controlStatus;
 // Espera a que todo el HTML esté cargado
 document.addEventListener("DOMContentLoaded", () => {
 
+    // 1. INICIAR CONEXIÓN WEBSOCKET
+    initWebSocket();
+
+    // 2. OBTENER REFERENCIAS
     btnForward = document.getElementById("btn-forward");
     btnBackward = document.getElementById("btn-backward");
     btnLeft = document.getElementById("btn-left");
@@ -32,90 +44,93 @@ document.addEventListener("DOMContentLoaded", () => {
 
     controlStatus = document.getElementById("control-status");
 
-    // --- EVENT LISTENERS ---
-    btnForward?.addEventListener('click', () => sendMove('Adelante'));
-    btnBackward?.addEventListener('click', () => sendMove('Atrás'));
-    btnStop?.addEventListener('click', () => sendMove('Detener'));
+    // 3. EVENT LISTENERS (Ahora llaman a sendMoveWS)
+    btnForward?.addEventListener('click', () => sendMoveWS('Adelante'));
+    btnBackward?.addEventListener('click', () => sendMoveWS('Atrás'));
+    btnStop?.addEventListener('click', () => sendMoveWS('Detener'));
 
-    btnFwdRight?.addEventListener('click', () => sendMove('Vuelta adelante derecha'));
-    btnFwdLeft?.addEventListener('click', () => sendMove('Vuelta adelante izquierda'));
+    btnFwdRight?.addEventListener('click', () => sendMoveWS('Vuelta adelante derecha'));
+    btnFwdLeft?.addEventListener('click', () => sendMoveWS('Vuelta adelante izquierda'));
 
-    btnBackRight?.addEventListener('click', () => sendMove('Vuelta atrás derecha'));
-    btnBackLeft?.addEventListener('click', () => sendMove('Vuelta atrás izquierda'));
+    btnBackRight?.addEventListener('click', () => sendMoveWS('Vuelta atrás derecha'));
+    btnBackLeft?.addEventListener('click', () => sendMoveWS('Vuelta atrás izquierda'));
 
-    btnRight?.addEventListener('click', () => sendMove('Giro 90° derecha'));
-    btnLeft?.addEventListener('click', () => sendMove('Giro 90° izquierda'));
+    btnRight?.addEventListener('click', () => sendMoveWS('Giro 90° derecha'));
+    btnLeft?.addEventListener('click', () => sendMoveWS('Giro 90° izquierda'));
 
-    btnRotateLeft360?.addEventListener('click', () => sendMove('Giro 360° izquierda'));
-    btnRotateRight360?.addEventListener('click', () => sendMove('Giro 360° derecha'));
+    btnRotateLeft360?.addEventListener('click', () => sendMoveWS('Giro 360° izquierda'));
+    btnRotateRight360?.addEventListener('click', () => sendMoveWS('Giro 360° derecha'));
 
-    // --- NUEVO: CONTROL DE VELOCIDAD ---
-    btnSpeedLow?.addEventListener('click', () => setSpeed(150, btnSpeedLow));
-    btnSpeedMid?.addEventListener('click', () => setSpeed(200, btnSpeedMid));
-    btnSpeedHigh?.addEventListener('click', () => setSpeed(250, btnSpeedHigh));
+    // Control de Velocidad por WebSocket
+    btnSpeedLow?.addEventListener('click', () => setSpeedWS(150, btnSpeedLow));
+    btnSpeedMid?.addEventListener('click', () => setSpeedWS(200, btnSpeedMid));
+    btnSpeedHigh?.addEventListener('click', () => setSpeedWS(250, btnSpeedHigh));
 });
 
-// === NUEVO: FUNCIÓN PARA ENVIAR VELOCIDAD ===
-async function setSpeed(speed, button) {
-    const endpoint = `${API_BASE_URL}/speed`;
+/**
+ * Inicializa la conexión WebSocket y maneja reconexiones
+ */
+function initWebSocket() {
+    console.log("Conectando al servidor de control...");
+    socket = new WebSocket(WS_URL);
 
-    // Actualiza visualmente el botón activo
-    document.querySelectorAll("#btn-speed-low, #btn-speed-mid, #btn-speed-high")
-        .forEach(btn => btn.classList.remove("active"));
+    socket.onopen = () => {
+        console.log("✅ Conectado al WebSocket de Control");
+        showStatus("Sistema en línea 🟢", "success");
+    };
 
-    button.classList.add("active");
+    socket.onclose = () => {
+        console.warn("⚠️ Conexión perdida. Reintentando en 3s...");
+        showStatus("Desconectado. Reconectando...", "danger");
+        setTimeout(initWebSocket, 3000); // Reintentar conexión
+    };
 
-    showStatus(`Enviando velocidad: ${speed}...`, "info");
+    socket.onerror = (error) => {
+        console.error("❌ Error de WebSocket:", error);
+    };
+}
 
-    try {
-        const response = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+/**
+ * Envía comando de movimiento por WebSocket
+ */
+function sendMoveWS(action) {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        // Estructura que espera el backend (sockets/events.py)
+        const payload = {
+            event: "control_move",
+            data: {
                 device_uid: DEVICE_UID,
-                speed: speed
-            })
-        });
-
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Error desconocido");
-
-        showStatus(`Velocidad actualizada a ${speed}.`, "success");
-
-    } catch (err) {
-        showStatus(`Error al cambiar velocidad: ${err.message}`, "danger");
+                action: action
+            }
+        };
+        socket.send(JSON.stringify(payload));
+        showStatus(`Enviando: ${action}...`, 'info');
+    } else {
+        showStatus("Error: No hay conexión con el servidor", "danger");
     }
 }
 
 /**
- * Envía un comando de movimiento a la API usando fetch async/await.
+ * Envía comando de velocidad por WebSocket
  */
-async function sendMove(action) {
-    const endpoint = `${API_BASE_URL}/move`;
+function setSpeedWS(speed, button) {
+    // Actualiza visualmente el botón activo
+    document.querySelectorAll("#btn-speed-low, #btn-speed-mid, #btn-speed-high")
+        .forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
 
-    const bodyData = {
-        device_uid: DEVICE_UID,
-        action: action
-    };
-
-    showStatus(`Enviando comando: ${action}...`, 'info');
-
-    try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(bodyData)
-        });
-
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Error desconocido');
-
-        const opKey = result.op_key || action;
-
-        showStatus(`Comando "${action}" (op_key: ${opKey}) enviado correctamente.`, 'success');
-
-    } catch (error) {
-        showStatus(`Error al enviar "${action}": ${error.message}`, 'danger');
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        const payload = {
+            event: "control_speed",
+            data: {
+                device_uid: DEVICE_UID,
+                speed: speed
+            }
+        };
+        socket.send(JSON.stringify(payload));
+        showStatus(`Velocidad ajustada a ${speed}`, "success");
+    } else {
+        showStatus("Error: No hay conexión para cambiar velocidad", "danger");
     }
 }
 
@@ -124,5 +139,11 @@ function showStatus(message, type = 'info') {
         controlStatus.textContent = message;
         controlStatus.className = `alert alert-${type} mt-3 rounded-3`;
         controlStatus.style.display = 'block';
+        
+        // Ocultar mensaje después de 2 segundos si es éxito
+        if (type === 'success') {
+            setTimeout(() => { controlStatus.style.display = 'none'; }, 2000);
+        }
     }
+    console.log(`[STATUS] ${message}`);
 }
