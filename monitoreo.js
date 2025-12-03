@@ -1,25 +1,25 @@
 /**
- * monitoreo.js - LIMITADO A 5 REGISTROS CON TIMESTAMP
+ * monitoreo.js - LIMITADO A 5 REGISTROS CON TIMESTAMP + ESTATUS GRANDE
  */
 
 // --- CONFIGURACIÓN ---
 const WS_URL = "ws://3.228.249.162:5500/ws/web";
 const API_BASE_URL = "http://3.228.249.162:5500/api";
 const DEVICE_UID = "CAR-01-ABCDEF";
-const MAX_ITEMS = 5; // 🔥 LÍMITE DE REGISTROS
+const MAX_ITEMS = 5;
 
 let socket;
-let movementsLog, obstaclesLog, monitoringStatus;
+let movementsLog, obstaclesLog, realtimeStatus; // Nueva variable
 
 document.addEventListener("DOMContentLoaded", () => {
     movementsLog = document.getElementById("movements-log");
     obstaclesLog = document.getElementById("obstacles-log");
-    monitoringStatus = document.getElementById("monitoring-status");
+    realtimeStatus = document.getElementById("realtime-status"); // 🔥 Captura el elemento grande
 
-    // 1. Carga inicial (Historial previo)
+    // 1. Carga inicial
     fetchInitialHistory();
 
-    // 2. Conectar WebSocket (Tiempo Real)
+    // 2. Conectar WebSocket
     initMonitoringWebSocket();
 });
 
@@ -28,7 +28,7 @@ function initMonitoringWebSocket() {
 
     socket.onopen = () => {
         console.log("✅ Monitoreo conectado");
-        updateStatus("Conexión Real-Time Activa 🟢");
+        if(realtimeStatus) realtimeStatus.textContent = "Conectado. Esperando...";
     };
 
     socket.onmessage = (event) => {
@@ -42,25 +42,39 @@ function initMonitoringWebSocket() {
 
     socket.onclose = () => {
         console.warn("⚠️ Conexión perdida. Reintentando...");
-        updateStatus("Desconectado. Reconectando... 🔴");
+        if(realtimeStatus) realtimeStatus.textContent = "Desconectado 🔴";
         setTimeout(initMonitoringWebSocket, 3000);
     };
 }
 
 function handleServerEvent(msg) {
     const { event, data } = msg;
-    
-    // Obtenemos la hora actual para ver que los registros son nuevos
     const now = new Date().toLocaleTimeString('es-MX');
 
+    // CASO A: MOVIMIENTO
     if (event === "new_movement" || event === "movement_report") {
         const text = data.status_text || data.action || "Movimiento";
-        // Ejemplo: [12:00:01] Adelante
+        
+        // 1. Actualizar el Estatus Grande
+        if(realtimeStatus) {
+            realtimeStatus.textContent = `Movimiento: ${text}`;
+            realtimeStatus.style.color = "#0d47a1"; // Azul
+        }
+
+        // 2. Agregar a la lista
         prependLog(movementsLog, `[${now}] ${text}`, "badge-mov");
     } 
+    // CASO B: OBSTÁCULO
     else if (event === "obstacle_detected") {
         const dist = data.distance_cm || "??";
-        // Ejemplo: [12:00:05] Obstáculo a 15cm
+        
+        // 1. Actualizar el Estatus Grande (Alerta Visual)
+        if(realtimeStatus) {
+            realtimeStatus.textContent = `⚠️ OBSTÁCULO DETECTADO (${dist}cm)`;
+            realtimeStatus.style.color = "#d32f2f"; // Rojo alerta
+        }
+
+        // 2. Agregar a la lista
         prependLog(obstaclesLog, `[${now}] Obstáculo a ${dist}cm`, "badge-obs");
     }
 }
@@ -69,7 +83,6 @@ function handleServerEvent(msg) {
  * Agrega datos al principio y ELIMINA los viejos si pasan de 5
  */
 function prependLog(container, text, badgeClass) {
-    // Limpiar mensaje de carga si existe
     if (container.innerHTML.includes("Cargando") || container.innerHTML.includes("Sin historial")) {
         container.innerHTML = "";
     }
@@ -79,41 +92,36 @@ function prependLog(container, text, badgeClass) {
     div.style.padding = "8px 0";
     div.style.fontSize = "0.8rem";
     
-    // Badge "NUEVO" visual
     const badgeHtml = badgeClass ? `<span class="${badgeClass}">NUEVO</span> ` : '';
     div.innerHTML = `${badgeHtml} ${text}`;
     
-    // Insertar arriba (Efecto Pila)
     container.insertBefore(div, container.firstChild);
 
-    // 🔥 BORRAR EL EXCEDENTE (Solo mantenemos 5)
     while (container.children.length > MAX_ITEMS) {
         container.removeChild(container.lastChild);
     }
 }
 
-// --- CARGA INICIAL (RECORTADA A 5) ---
+// --- CARGA INICIAL ---
 async function fetchInitialHistory() {
-    updateStatus("Cargando historial...");
     await Promise.all([fetchMovementsHttp(), fetchObstaclesHttp()]);
-    updateStatus("Conexión Real-Time Activa 🟢");
 }
 
 async function fetchMovementsHttp() {
     try {
         const res = await fetch(`${API_BASE_URL}/movements/last10?device_uid=${DEVICE_UID}`);
         const json = await res.json();
+        
+        // 🔥 Si hay historial, poner el último en el estatus grande al cargar
         if (json.movements && json.movements.length > 0) {
-            movementsLog.innerHTML = "";
+            const last = json.movements[0]; // El más nuevo
+            if(realtimeStatus) realtimeStatus.textContent = `Último: ${last.status_text}`;
             
-            // 1. Tomamos los 5 más recientes (API devuelve DESC)
-            // 2. Invertimos para insertarlos en orden cronológico (viejo -> nuevo)
-            //    así el prependLog deja el más nuevo al final (arriba).
+            movementsLog.innerHTML = "";
             const recent5 = json.movements.slice(0, MAX_ITEMS).reverse();
-
             recent5.forEach(m => {
                 const time = new Date(m.ts).toLocaleTimeString('es-MX');
-                prependLog(movementsLog, `[${time}] ${m.status_text}`, ""); // Sin badge
+                prependLog(movementsLog, `[${time}] ${m.status_text}`, "");
             });
         } else {
             movementsLog.innerHTML = "<div class='text-muted p-2'>Sin historial reciente.</div>";
@@ -127,10 +135,7 @@ async function fetchObstaclesHttp() {
         const json = await res.json();
         if (json.obstacles && json.obstacles.length > 0) {
             obstaclesLog.innerHTML = "";
-            
-            // Misma lógica: Cortar 5 y Revertir
             const recent5 = json.obstacles.slice(0, MAX_ITEMS).reverse();
-
             recent5.forEach(o => {
                 const time = new Date(o.ts).toLocaleTimeString('es-MX');
                 prependLog(obstaclesLog, `[${time}] ${o.status_text} (${o.distance_cm}cm)`, "");
@@ -139,8 +144,4 @@ async function fetchObstaclesHttp() {
             obstaclesLog.innerHTML = "<div class='text-muted p-2'>Sin historial reciente.</div>";
         }
     } catch (e) { console.error(e); }
-}
-
-function updateStatus(msg) {
-    if (monitoringStatus) monitoringStatus.textContent = msg;
 }

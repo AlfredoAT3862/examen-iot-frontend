@@ -10,32 +10,51 @@
 
     <style>
         html, body {
-            height: 100vh; /* Altura exacta de la ventana */
-            width: 100vw;  /* Ancho exacto de la ventana */
+            height: 100vh; 
+            width: 100vw;  
             margin: 0;
             padding: 0;
-            overflow: hidden; /* ESTO ELIMINA EL SCROLLBAR Y LA ACCIÓN DE SCROLL */
-            overscroll-behavior: none; /* Evita el efecto de "rebote" en móviles */
+            overflow: hidden; 
+            overscroll-behavior: none; 
         }
 
         body {
             display: flex;
-            flex-direction: column; /* Organiza Nav y Main en columna vertical */
+            flex-direction: column; 
         }
 
-        /* El contenedor principal ocupará todo el espacio sobrante y centrará el contenido */
         main.flex-fill {
             display: flex;
-            align-items: center;     /* Centrado Vertical */
-            justify-content: center; /* Centrado Horizontal */
-            overflow: hidden;        /* Asegura que nada dentro genere scroll */
+            align-items: center;     
+            justify-content: center; 
+            overflow: hidden;        
         }
 
-        /* Ajuste opcional para asegurar que el panel no sea excesivamente grande en pantallas pequeñas */
         #control-panel {
-            max-height: 90vh;
+            max-height: 95vh;
             width: 100%;
-            max-width: 800px; /* Mantiene tu diseño de col-lg-8 */
+            max-width: 800px;
+            /* Flexbox interno para organizar mejor si falta espacio */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Estilo para el contenedor del último movimiento */
+        .last-action-container {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            font-size: 0.95rem;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .last-action-text {
+            color: #d63384; /* Color llamativo (rosa bootstrap) */
+            font-weight: bold;
         }
     </style>
 </head>
@@ -45,7 +64,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-olive-nav shadow-sm flex-shrink-0">
         <div class="container">
             <a class="navbar-brand" href="index.html">Carrito a control remoto</a>
-            <ul class="navbar-nav ms-auto"> <li class="nav-item">
+            <ul class="navbar-nav ms-auto"> 
+                <li class="nav-item">
                     <a class="nav-link" href="monitoreo.html">Ir a Monitoreo</a>
                 </li>
                 <li class="nav-item">
@@ -57,9 +77,9 @@
 
     <main class="container-fluid flex-fill p-2">
         
-        <section class="p-4 bg-white rounded-4 shadow-sm text-center" id="control-panel">
-            <h2 class="text-brown">Panel de Control</h2>
-            <p class="text-muted">Envía comandos de movimiento al dispositivo.</p>
+        <section class="p-3 bg-white rounded-4 shadow-sm text-center" id="control-panel">
+            <h2 class="text-brown fs-4 mb-2">Panel de Control</h2>
+            <p class="text-muted small mb-3">Envía comandos de movimiento al dispositivo.</p>
 
             <div class="control-pad-container">
                 
@@ -77,25 +97,29 @@
                     <button id="btn-backward-right" class="btn btn-brown rounded-3">Atrás-Der</button>
                 </div>
 
-                <div class="controls-360 mt-4 d-flex justify-content-center gap-3">
-                    <button id="btn-rotate-left-360" class="btn btn-warning rounded-3">Giro 360° Izq</button>
-                    <button id="btn-rotate-right-360" class="btn btn-warning rounded-3">Giro 360° Der</button>
+                <div class="controls-360 mt-3 d-flex justify-content-center gap-3">
+                    <button id="btn-rotate-left-360" class="btn btn-warning rounded-3 btn-sm">Giro 360° Izq</button>
+                    <button id="btn-rotate-right-360" class="btn btn-warning rounded-3 btn-sm">Giro 360° Der</button>
                 </div>
 
-                <hr class="my-4">
-                <h4 class="text-center text-brown mb-3">Control de Velocidad</h4>
+                <hr class="my-3">
+                <h4 class="text-center text-brown mb-2 fs-6">Control de Velocidad</h4>
                 <div class="d-flex justify-content-center gap-2">
-                    <button id="btn-speed-low" class="btn btn-outline-success rounded-3">Baja (140)</button>
-                    <button id="btn-speed-mid" class="btn btn-outline-primary rounded-3 active">Media (170)</button>
-                    <button id="btn-speed-high" class="btn btn-outline-danger rounded-3">Alta (200)</button>
+                    <button id="btn-speed-low" class="btn btn-outline-success btn-sm rounded-3">Baja (140)</button>
+                    <button id="btn-speed-mid" class="btn btn-outline-primary btn-sm rounded-3 active">Media (170)</button>
+                    <button id="btn-speed-high" class="btn btn-outline-danger btn-sm rounded-3">Alta (200)</button>
                 </div>
+
+                <div class="last-action-container">
+                    Último movimiento enviado: <span id="last-action-text" class="last-action-text">Ninguno</span>
+                </div>
+
             </div>
 
         </section>
 
     </main>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="main.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script> <script src="main.js"></script>
 </body>
 </html>

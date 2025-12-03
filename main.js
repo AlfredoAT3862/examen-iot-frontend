@@ -4,7 +4,6 @@
  */
 
 // --- CONFIGURACIÓN ---
-// NOTA: Cambiamos http:// por ws:// y apuntamos a la ruta nueva
 const WS_URL = "ws://3.228.249.162:5500/ws/web";
 const DEVICE_UID = "CAR-01-ABCDEF";
 
@@ -16,6 +15,7 @@ let btnFwdLeft, btnFwdRight, btnBackLeft, btnBackRight;
 let btnRotateLeft360, btnRotateRight360;
 let btnSpeedLow, btnSpeedMid, btnSpeedHigh;
 let controlStatus;
+let lastActionSpan; // 🔥 Nueva referencia
 
 // Espera a que todo el HTML esté cargado
 document.addEventListener("DOMContentLoaded", () => {
@@ -43,8 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
     btnSpeedHigh = document.getElementById("btn-speed-high");
 
     controlStatus = document.getElementById("control-status");
+    lastActionSpan = document.getElementById("last-action-text"); // 🔥 Referencia al span
 
-    // 3. EVENT LISTENERS (Ahora llaman a sendMoveWS)
+    // 3. EVENT LISTENERS
     btnForward?.addEventListener('click', () => sendMoveWS('Adelante'));
     btnBackward?.addEventListener('click', () => sendMoveWS('Atrás'));
     btnStop?.addEventListener('click', () => sendMoveWS('Detener'));
@@ -61,14 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
     btnRotateLeft360?.addEventListener('click', () => sendMoveWS('Giro 360° izquierda'));
     btnRotateRight360?.addEventListener('click', () => sendMoveWS('Giro 360° derecha'));
 
-    // Control de Velocidad por WebSocket
+    // Control de Velocidad
     btnSpeedLow?.addEventListener('click', () => setSpeedWS(150, btnSpeedLow));
     btnSpeedMid?.addEventListener('click', () => setSpeedWS(200, btnSpeedMid));
     btnSpeedHigh?.addEventListener('click', () => setSpeedWS(250, btnSpeedHigh));
 });
 
 /**
- * Inicializa la conexión WebSocket y maneja reconexiones
+ * Inicializa la conexión WebSocket
  */
 function initWebSocket() {
     console.log("Conectando al servidor de control...");
@@ -82,7 +83,7 @@ function initWebSocket() {
     socket.onclose = () => {
         console.warn("⚠️ Conexión perdida. Reintentando en 3s...");
         showStatus("Desconectado. Reconectando...", "danger");
-        setTimeout(initWebSocket, 3000); // Reintentar conexión
+        setTimeout(initWebSocket, 3000); 
     };
 
     socket.onerror = (error) => {
@@ -95,7 +96,6 @@ function initWebSocket() {
  */
 function sendMoveWS(action) {
     if (socket && socket.readyState === WebSocket.OPEN) {
-        // Estructura que espera el backend (sockets/events.py)
         const payload = {
             event: "control_move",
             data: {
@@ -104,6 +104,15 @@ function sendMoveWS(action) {
             }
         };
         socket.send(JSON.stringify(payload));
+        
+        // 🔥 ACTUALIZAR EL TEXTO VISUALMENTE
+        if (lastActionSpan) {
+            lastActionSpan.textContent = action;
+            // Opcional: Efecto visual rápido
+            lastActionSpan.style.opacity = '0.5';
+            setTimeout(() => lastActionSpan.style.opacity = '1', 100);
+        }
+
         showStatus(`Enviando: ${action}...`, 'info');
     } else {
         showStatus("Error: No hay conexión con el servidor", "danger");
@@ -111,10 +120,9 @@ function sendMoveWS(action) {
 }
 
 /**
- * Envía comando de velocidad por WebSocket
+ * Envía comando de velocidad
  */
 function setSpeedWS(speed, button) {
-    // Actualiza visualmente el botón activo
     document.querySelectorAll("#btn-speed-low, #btn-speed-mid, #btn-speed-high")
         .forEach(btn => btn.classList.remove("active"));
     button.classList.add("active");
@@ -140,7 +148,6 @@ function showStatus(message, type = 'info') {
         controlStatus.className = `alert alert-${type} mt-3 rounded-3`;
         controlStatus.style.display = 'block';
         
-        // Ocultar mensaje después de 2 segundos si es éxito
         if (type === 'success') {
             setTimeout(() => { controlStatus.style.display = 'none'; }, 2000);
         }

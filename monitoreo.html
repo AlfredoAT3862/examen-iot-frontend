@@ -12,7 +12,6 @@
     <link rel="icon" href="carro.png" type="image/x-icon">
 
     <style>
-        /* 1. ESTRUCTURA GLOBAL */
         html, body {
             height: 100vh;
             width: 100vw;
@@ -25,10 +24,6 @@
         body {
             display: flex;
             flex-direction: column;
-        }
-
-        nav {
-            flex-shrink: 0;
         }
 
         main {
@@ -51,24 +46,41 @@
             text-align: center;
         }
 
-        /* 2. FILA DE DATOS - ALTURA AJUSTADA */
+        /* --- NUEVO: TARJETA DE ESTATUS DESTACADA --- */
+        .status-card {
+            flex-shrink: 0; /* No se encoge */
+            background-color: #e3f2fd; /* Azul muy claro */
+            border: 1px solid #90caf9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .status-title {
+            font-size: 0.85rem;
+            color: #1976d2;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0d47a1;
+            margin: 0;
+        }
+
+        /* AJUSTE DE ALTURA PARA LAS LISTAS (Para que quepa todo) */
         .data-row {
-            height: 50%; 
-            min-height: 200px;
-            margin-bottom: 1rem;
+            flex: 1; /* Ocupa el espacio restante */
+            min-height: 0; /* Importante para flexbox */
+            margin-bottom: 0;
         }
 
-        /* 3. ESPACIO FUTURO */
-        .future-content-area {
-            flex: 1;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #aaa;
-        }
-
-        /* TARJETAS */
         .log-card {
             height: 100%; 
             display: flex;
@@ -92,17 +104,16 @@
             align-items: center;
         }
 
-        /* 4. CONTENIDO COMPACTO */
         .log-content {
             flex: 1;
-            overflow-y: hidden; /* Ocultamos el scroll si son solo 5 fijos */
+            overflow-y: hidden;
             padding: 10px;
             background-color: #fafafa;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 0.75rem; 
             color: #333;
             white-space: pre-wrap;
-            line-height: 1.6; /* Un poco más de separación entre líneas */
+            line-height: 1.6;
         }
 
         .badge-mov { background-color: #e3f2fd; color: #0d47a1; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
@@ -131,10 +142,14 @@
             
             <div class="page-header">
                 <h2 class="text-brown mb-0 fw-bold fs-4">Panel de Monitoreo</h2>
-                <p class="text-muted small mb-0">Últimos 5 registros en tiempo real</p>
             </div>
 
             <hr class="my-2 opacity-25">
+
+            <div class="status-card">
+                <div class="status-title">Último Estatus en Tiempo Real</div>
+                <h3 id="realtime-status" class="status-value">Esperando datos...</h3>
+            </div>
 
             <div class="row g-3 data-row">
                 
@@ -142,7 +157,7 @@
                     <div class="log-card">
                         <div class="log-header">
                             <span>Movimientos</span>
-                            <span class="badge-mov">Motor</span>
+                            <span class="badge-mov">Historial (5)</span>
                         </div>
                         <div id="movements-log" class="log-content">
                             Cargando historial...
@@ -163,9 +178,6 @@
                 </div>
             
             </div>
-
-            <div class="future-content-area">
-                </div>
 
         </div>
     </main>
