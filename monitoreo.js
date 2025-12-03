@@ -1,27 +1,25 @@
 /**
- * monitoreo.js - VERSIÓN WEBSOCKET (PUSH)
- * Recibe actualizaciones en tiempo real sin recargar.
+ * monitoreo.js - LIMITADO A 5 REGISTROS CON TIMESTAMP
  */
 
 // --- CONFIGURACIÓN ---
 const WS_URL = "ws://3.228.249.162:5500/ws/web";
-const API_BASE_URL = "http://3.228.249.162:5500/api"; // Solo para carga inicial
+const API_BASE_URL = "http://3.228.249.162:5500/api";
 const DEVICE_UID = "CAR-01-ABCDEF";
+const MAX_ITEMS = 5; // 🔥 LÍMITE DE REGISTROS
 
 let socket;
 let movementsLog, obstaclesLog, monitoringStatus;
 
-// Espera a que todo el HTML esté cargado
 document.addEventListener("DOMContentLoaded", () => {
-    // Asignar elementos de monitoreo
     movementsLog = document.getElementById("movements-log");
     obstaclesLog = document.getElementById("obstacles-log");
-    monitoringStatus = document.getElementById("monitoring-status"); // (Opcional si existe en HTML)
+    monitoringStatus = document.getElementById("monitoring-status");
 
-    // 1. Carga inicial (HTTP) para no ver la pantalla vacía
+    // 1. Carga inicial (Historial previo)
     fetchInitialHistory();
 
-    // 2. Conectar al flujo de datos en Tiempo Real
+    // 2. Conectar WebSocket (Tiempo Real)
     initMonitoringWebSocket();
 });
 
@@ -29,12 +27,11 @@ function initMonitoringWebSocket() {
     socket = new WebSocket(WS_URL);
 
     socket.onopen = () => {
-        console.log("✅ Monitoreo conectado a Tiempo Real");
+        console.log("✅ Monitoreo conectado");
         updateStatus("Conexión Real-Time Activa 🟢");
     };
 
     socket.onmessage = (event) => {
-        // AQUÍ LLEGAN LOS DATOS DEL SERVIDOR (PUSH)
         try {
             const msg = JSON.parse(event.data);
             handleServerEvent(msg);
@@ -50,50 +47,54 @@ function initMonitoringWebSocket() {
     };
 }
 
-/**
- * Procesa los eventos que manda el servidor (sockets/events.py)
- */
 function handleServerEvent(msg) {
     const { event, data } = msg;
+    
+    // Obtenemos la hora actual para ver que los registros son nuevos
+    const now = new Date().toLocaleTimeString('es-MX');
 
-    // Caso A: Nuevo Movimiento reportado
     if (event === "new_movement" || event === "movement_report") {
-        const text = data.status_text || data.action || "Movimiento desconocido";
-        // Agregar al tope de la lista
-        prependLog(movementsLog, `[AHORA] ${text}`, "badge-mov");
+        const text = data.status_text || data.action || "Movimiento";
+        // Ejemplo: [12:00:01] Adelante
+        prependLog(movementsLog, `[${now}] ${text}`, "badge-mov");
     } 
-    // Caso B: Obstáculo detectado
     else if (event === "obstacle_detected") {
         const dist = data.distance_cm || "??";
-        prependLog(obstaclesLog, `[ALERTA] Obstáculo a ${dist}cm`, "badge-obs");
+        // Ejemplo: [12:00:05] Obstáculo a 15cm
+        prependLog(obstaclesLog, `[${now}] Obstáculo a ${dist}cm`, "badge-obs");
     }
 }
 
 /**
- * Función auxiliar para agregar datos AL PRINCIPIO de la lista visual
+ * Agrega datos al principio y ELIMINA los viejos si pasan de 5
  */
 function prependLog(container, text, badgeClass) {
-    // Si es texto plano (mensaje de "cargando"), límpialo
-    if (container.textContent.includes("Cargando") || container.textContent.includes("No hay")) {
+    // Limpiar mensaje de carga si existe
+    if (container.innerHTML.includes("Cargando") || container.innerHTML.includes("Sin historial")) {
         container.innerHTML = "";
     }
 
     const div = document.createElement("div");
     div.style.borderBottom = "1px solid #eee";
-    div.style.padding = "6px 0";
-    div.style.fontSize = "0.85rem";
+    div.style.padding = "8px 0";
+    div.style.fontSize = "0.8rem";
     
-    // Crear el HTML interno con badge
+    // Badge "NUEVO" visual
     const badgeHtml = badgeClass ? `<span class="${badgeClass}">NUEVO</span> ` : '';
     div.innerHTML = `${badgeHtml} ${text}`;
     
-    // Insertar antes del primer hijo (Efecto Push)
+    // Insertar arriba (Efecto Pila)
     container.insertBefore(div, container.firstChild);
+
+    // 🔥 BORRAR EL EXCEDENTE (Solo mantenemos 5)
+    while (container.children.length > MAX_ITEMS) {
+        container.removeChild(container.lastChild);
+    }
 }
 
-// --- CARGA INICIAL (HISTORIAL VIEJO) ---
+// --- CARGA INICIAL (RECORTADA A 5) ---
 async function fetchInitialHistory() {
-    updateStatus("Cargando historial previo...");
+    updateStatus("Cargando historial...");
     await Promise.all([fetchMovementsHttp(), fetchObstaclesHttp()]);
     updateStatus("Conexión Real-Time Activa 🟢");
 }
@@ -103,14 +104,19 @@ async function fetchMovementsHttp() {
         const res = await fetch(`${API_BASE_URL}/movements/last10?device_uid=${DEVICE_UID}`);
         const json = await res.json();
         if (json.movements && json.movements.length > 0) {
-            movementsLog.innerHTML = ""; // Limpiar "Cargando..."
-            // Recorremos al revés para que el más nuevo quede arriba
-            json.movements.reverse().forEach(m => {
+            movementsLog.innerHTML = "";
+            
+            // 1. Tomamos los 5 más recientes (API devuelve DESC)
+            // 2. Invertimos para insertarlos en orden cronológico (viejo -> nuevo)
+            //    así el prependLog deja el más nuevo al final (arriba).
+            const recent5 = json.movements.slice(0, MAX_ITEMS).reverse();
+
+            recent5.forEach(m => {
                 const time = new Date(m.ts).toLocaleTimeString('es-MX');
-                prependLog(movementsLog, `[${time}] ${m.status_text}`, ""); // Sin badge de "NUEVO"
+                prependLog(movementsLog, `[${time}] ${m.status_text}`, ""); // Sin badge
             });
         } else {
-            movementsLog.textContent = "Sin historial reciente.";
+            movementsLog.innerHTML = "<div class='text-muted p-2'>Sin historial reciente.</div>";
         }
     } catch (e) { console.error(e); }
 }
@@ -121,12 +127,16 @@ async function fetchObstaclesHttp() {
         const json = await res.json();
         if (json.obstacles && json.obstacles.length > 0) {
             obstaclesLog.innerHTML = "";
-            json.obstacles.reverse().forEach(o => {
+            
+            // Misma lógica: Cortar 5 y Revertir
+            const recent5 = json.obstacles.slice(0, MAX_ITEMS).reverse();
+
+            recent5.forEach(o => {
                 const time = new Date(o.ts).toLocaleTimeString('es-MX');
                 prependLog(obstaclesLog, `[${time}] ${o.status_text} (${o.distance_cm}cm)`, "");
             });
         } else {
-            obstaclesLog.textContent = "Sin historial reciente.";
+            obstaclesLog.innerHTML = "<div class='text-muted p-2'>Sin historial reciente.</div>";
         }
     } catch (e) { console.error(e); }
 }

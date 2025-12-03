@@ -47,23 +47,20 @@
 
         .page-header {
             flex-shrink: 0;
-            margin-bottom: 0.5rem; /* Margen reducido */
+            margin-bottom: 0.5rem;
             text-align: center;
         }
 
-        /* 2. FILA DE DATOS - CAMBIO CLAVE */
+        /* 2. FILA DE DATOS - ALTURA AJUSTADA */
         .data-row {
-            /* ANTES: flex: 1; (Ocupaba todo el espacio restante) */
-            /* AHORA: height: 50%; (Ocupa solo la mitad, dejando espacio abajo) */
             height: 50%; 
-            min-height: 200px; /* Evita que se aplaste demasiado en móviles */
+            min-height: 200px;
             margin-bottom: 1rem;
         }
 
-        /* 3. ESPACIO FUTURO (Opcional: visualiza dónde irá tu próxima info) */
+        /* 3. ESPACIO FUTURO */
         .future-content-area {
-            flex: 1; /* Esto ocupará el resto del espacio vacío abajo */
-            /* border: 2px dashed #ccc;  <-- Descomenta esto si quieres ver el borde del área vacía */
+            flex: 1;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -85,10 +82,10 @@
 
         .log-header {
             background-color: #f1f3f5;
-            padding: 8px 12px; /* Padding reducido */
+            padding: 8px 12px;
             border-bottom: 1px solid #e0e0e0;
             font-weight: 600;
-            font-size: 0.9rem; /* Header un poco más pequeño */
+            font-size: 0.9rem;
             color: #555;
             display: flex;
             justify-content: space-between;
@@ -98,24 +95,15 @@
         /* 4. CONTENIDO COMPACTO */
         .log-content {
             flex: 1;
-            overflow-y: auto;
-            padding: 10px; /* Menos relleno */
+            overflow-y: hidden; /* Ocultamos el scroll si son solo 5 fijos */
+            padding: 10px;
             background-color: #fafafa;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            
-            /* LETRA MÁS PEQUEÑA SOLICITADA */
             font-size: 0.75rem; 
-            
             color: #333;
             white-space: pre-wrap;
-            line-height: 1.4; /* Líneas un poco más juntas */
+            line-height: 1.6; /* Un poco más de separación entre líneas */
         }
-
-        /* Scrollbar estilizado */
-        .log-content::-webkit-scrollbar { width: 5px; }
-        .log-content::-webkit-scrollbar-track { background: #f1f1f1; }
-        .log-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-        .log-content::-webkit-scrollbar-thumb:hover { background: #aaa; }
 
         .badge-mov { background-color: #e3f2fd; color: #0d47a1; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
         .badge-obs { background-color: #fbe9e7; color: #bf360c; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
@@ -143,7 +131,7 @@
             
             <div class="page-header">
                 <h2 class="text-brown mb-0 fw-bold fs-4">Panel de Monitoreo</h2>
-                <p class="text-muted small mb-0">Eventos en tiempo real</p>
+                <p class="text-muted small mb-0">Últimos 5 registros en tiempo real</p>
             </div>
 
             <hr class="my-2 opacity-25">
@@ -181,8 +169,7 @@
 
         </div>
     </main>
-
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
     <script src="monitoreo.js"></script>
 </body>
 </html>
