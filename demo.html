@@ -9,13 +9,12 @@
     <link rel="icon" href="carro.png" type="image/x-icon">
 
     <style>
-        /* 1. Bloqueo total de la ventana */
         html, body {
             height: 100vh;
             width: 100vw;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Adios scroll de página */
+            overflow: hidden;
             overscroll-behavior: none;
         }
 
@@ -24,48 +23,28 @@
             flex-direction: column;
         }
 
-        /* 2. El Main ocupa todo el espacio sobrante */
         main {
-            flex: 1; /* Crece para llenar el hueco entre navbar y final de pantalla */
-            overflow: hidden; /* Asegura que el main no empuje la pantalla */
+            flex: 1;
+            overflow: hidden;
             padding-top: 1rem;
             padding-bottom: 1rem;
         }
 
-        /* 3. El contenedor y la fila ocupan el 100% de la altura del Main */
-        .container-full-height {
-            height: 100%;
-        }
-        
-        .row-full-height {
-            height: 100%;
-        }
+        .container-full-height { height: 100%; }
+        .row-full-height { height: 100%; }
+        .col-full-height { height: 100%; display: flex; flex-direction: column; }
 
-        /* 4. Las columnas también deben ser altas */
-        .col-full-height {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 5. MAGIA AQUÍ: Las secciones blancas tienen scroll interno */
         .panel-scroll {
             background-color: white;
-            border-radius: 1rem; /* rounded-4 de bootstrap */
+            border-radius: 1rem;
             padding: 1.5rem;
-            height: 100%;       /* Llena la columna */
-            overflow-y: auto;   /* Scroll solo AQUI dentro si hace falta */
-            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); /* shadow-sm */
+            height: 100%;
+            overflow-y: auto;
+            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
         }
 
-        /* Estilo opcional para que la barra de scroll se vea bonita en Chrome/Safari */
-        .panel-scroll::-webkit-scrollbar {
-            width: 8px;
-        }
-        .panel-scroll::-webkit-scrollbar-thumb {
-            background-color: #ccc;
-            border-radius: 4px;
-        }
+        .panel-scroll::-webkit-scrollbar { width: 8px; }
+        .panel-scroll::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
     </style>
 </head>
 
@@ -75,12 +54,8 @@
         <div class="container">
             <a class="navbar-brand" href="index.html">Carrito a control remoto</a>
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="control.html">Ir a Control</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="monitoreo.html">Ir a Monitoreo</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="control.html">Ir a Control</a></li>
+                <li class="nav-item"><a class="nav-link" href="monitoreo.html">Ir a Monitoreo</a></li>
             </ul>
         </div>
     </nav>
@@ -90,37 +65,49 @@
             
             <div class="col-lg-5 col-full-height">
                 <section class="panel-scroll">
-                    <h2 class="text-brown mb-3">Constructor de Demo</h2>
+                    <h2 class="text-brown mb-3">Constructor</h2>
                     
                     <div class="mb-3">
-                        <label for="select-movement" class="form-label">Movimiento:</label>
+                        <label for="select-movement" class="form-label">Agregar paso:</label>
                         <select class="form-select rounded-3" id="select-movement">
                             </select>
                     </div>
                     
                     <button id="btn-add-step" class="btn btn-olive rounded-3 w-100">
-                        Añadir Movimiento a la Lista
+                        Añadir a la Lista
                     </button>
                     
                     <hr class="my-4">
                     
-                    <h3 class="h5 text-dark">Ejecutar Secuencia</h3>
+                    <h3 class="h5 text-dark">Guardar y Ejecutar</h3>
                     <div class="mb-3">
-                        <label for="sequence-name" class="form-label">Nombre de la Secuencia:</label>
-                        <input type="text" class="form-control rounded-3" id="sequence-name" value="Mi Secuencia Demo 1">
+                        <label for="sequence-name" class="form-label">Nombre del Demo:</label>
+                        <input type="text" class="form-control rounded-3" id="sequence-name" placeholder="Ej. Zigzag Rápido">
                     </div>
                     
                     <button id="btn-run-demo" class="btn btn-danger rounded-3 w-100 btn-lg">
-                        !Ejecutar!
+                        ¡Guardar y Ejecutar!
                     </button>
                 </section>
             </div>
 
             <div class="col-lg-7 col-full-height">
                 <section class="panel-scroll">
+                    
+                    <div class="mb-4 p-3 bg-light rounded-3 border">
+                        <label for="select-saved-demo" class="form-label fw-bold">Cargar Demo Guardado:</label>
+                        <div class="input-group">
+                            <select class="form-select" id="select-saved-demo">
+                                <option value="" selected>-- Selecciona un demo --</option>
+                            </select>
+                            <button class="btn btn-outline-primary" id="btn-load-demo">Cargar</button>
+                            <button class="btn btn-outline-success" id="btn-run-saved">Ejecutar</button>
+                        </div>
+                    </div>
+
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h2 class="text-brown mb-0">Secuencia Actual</h2>
-                        <button id="btn-clear-list" class="btn btn-outline-danger btn-sm rounded-3">Limpiar Lista</button>
+                        <button id="btn-clear-list" class="btn btn-outline-danger btn-sm rounded-3">Limpiar</button>
                     </div>
                     
                     <ol id="sequence-list-display" class="list-group list-group-numbered rounded-3"></ol>
